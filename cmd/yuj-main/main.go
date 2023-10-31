@@ -1,10 +1,7 @@
 package main
 
-import (
-	db_scripts "yuj/pkg/storage/db-scripts"
-)
+import yujapp "yuj/pkg/yuj-app"
 
 func main() {
-	//* Connecting to database
-	db_scripts.ConnectDB()
+	yujapp.Run()
 }
