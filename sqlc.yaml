@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "pkg/storage/db-scripts/query.sql"
+    schema: "pkg/storage/db-scripts/schema.sql"
+
+    gen:
+      go:
+        package: "db"
+        out: "pkg/yuj-app/user/repository"
