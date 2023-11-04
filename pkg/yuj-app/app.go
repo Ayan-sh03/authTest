@@ -1,7 +1,7 @@
 package yujapp
 
-import scripts "yuj/pkg/storage/db-scripts"
+import "yuj/pkg/storage"
 
 func Run() {
-	scripts.ConnectDB()
+	storage.ConnectDB()
 }
