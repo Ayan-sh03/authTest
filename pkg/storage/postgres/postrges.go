@@ -1,4 +1,4 @@
-package scripts
+package postgres
 
 import (
 	"context"
@@ -14,7 +14,7 @@ var CONN *pgx.Conn
 
 const connectMsg string = "---------------------------------------------------------------------------------------------\nConnected to DB\n---------------------------------------------------------------------------------------------"
 
-func ConnectDB() *pgx.Conn {
+func Postgres() *pgx.Conn {
 	ctx := context.Background()
 	err := godotenv.Load()
 	if err != nil {
