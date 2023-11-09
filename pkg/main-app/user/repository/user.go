@@ -21,3 +21,4 @@ type User struct {
 	IsVerified bool
 	Otp        string
 }
+
