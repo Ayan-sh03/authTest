@@ -1,6 +1,6 @@
 package storage
 
-import "yuj/pkg/storage/postgres"
+import "authTest/pkg/storage/postgres"
 
 func ConnectDB() {
 	postgres.Postgres()
