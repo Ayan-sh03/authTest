@@ -1,4 +1,4 @@
-module auth
+module authTest
 
 go 1.21.1
 

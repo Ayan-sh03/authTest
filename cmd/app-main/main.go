@@ -1,7 +1,7 @@
 package main
 
 import (
-	"auth/pkg/main_app"
+	"authTest/pkg/main_app"
 )
 
 func main() {

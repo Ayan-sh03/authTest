@@ -1,7 +1,7 @@
 package main_app
 
 import (
-	"auth/pkg/storage"
+	"authTest/pkg/storage"
 	"log"
 
 	"github.com/joho/godotenv"
