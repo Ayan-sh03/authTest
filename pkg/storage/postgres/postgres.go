@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 )
 
 var CONN *pgx.Conn
@@ -16,11 +15,6 @@ const connectMsg string = "-----------------------------------------------------
 
 func Postgres() *pgx.Conn {
 	ctx := context.Background()
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	uri := os.Getenv("SQLURI")
 
 	conn, err := pgx.Connect(ctx, uri)
