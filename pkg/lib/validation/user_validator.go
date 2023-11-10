@@ -1,12 +1,12 @@
 package validation
 
 import (
-	db "authTest/pkg/main_app/user/repository"
+	"authTest/pkg/main_app/user/domain/model"
 	"errors"
 	"regexp"
 )
 
-func UserValidator(user *db.User) error {
+func UserValidator(user *model.User) error {
 	if user.Firstname == "" || user.Lastname == "" {
 		return errors.New("ERROR : Firstname field must not be empty")
 	}

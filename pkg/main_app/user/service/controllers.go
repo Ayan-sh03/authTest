@@ -4,7 +4,8 @@ import (
 	network "authTest/pkg/lib/net"
 	"authTest/pkg/lib/security"
 	"authTest/pkg/lib/util"
-	"authTest/pkg/main_app/user/domain"
+
+	domain "authTest/pkg/main_app/user/domain/model"
 	db "authTest/pkg/main_app/user/repository"
 
 	"context"

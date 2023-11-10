@@ -1,4 +1,4 @@
-package domain
+package model
 
 import (
 	db "authTest/pkg/main_app/user/repository"
