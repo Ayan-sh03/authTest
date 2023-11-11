@@ -23,7 +23,7 @@ func UserValidator(user *db.User) error {
 		return errors.New("ERROR : Password field must not be empty")
 	}
 
-	if !isValidPassword(user.Email) {
+	if !isValidPassword(user.Password) {
 		return errors.New("ERROR : Invalid password")
 	}
 

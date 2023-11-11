@@ -1,3 +1,6 @@
 .env
 doubts.md
 /.DS_Store
+package.json
+/node_modules/
+package-lock.json
