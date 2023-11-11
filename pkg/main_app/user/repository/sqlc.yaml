@@ -1,8 +1,8 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "../../../storage/query.sql"
-    schema: "../../../storage/schema.sql"
+    queries: "pkg/storage/query.sql"
+    schema: "pkg/storage/schema.sql"
 
     gen:
       go:

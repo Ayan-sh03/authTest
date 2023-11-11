@@ -1,12 +1,12 @@
 package validation
 
 import (
-	db "authTest/pkg/main_app/user/repository"
+	"authTest/pkg/main_app/user/domain/model"
 	"errors"
 	"regexp"
 )
 
-func UserValidator(user *db.User) error {
+func UserValidator(user *model.User) error {
 	if user.Firstname == "" || user.Lastname == "" {
 		return errors.New("ERROR : Firstname field must not be empty")
 	}
@@ -15,7 +15,7 @@ func UserValidator(user *db.User) error {
 		return errors.New("ERROR : Email field must not be empty")
 	}
 
-	if !isValidEmail(user.Email) {
+	if !IsValidEmail(user.Email) {
 		return errors.New("ERROR : Invalid email")
 	}
 
@@ -30,7 +30,7 @@ func UserValidator(user *db.User) error {
 	return nil
 }
 
-func isValidEmail(email string) bool {
+func IsValidEmail(email string) bool {
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_` + "`" + `{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$`)
 	return emailRegex.MatchString(email)
 }
@@ -44,16 +44,17 @@ func isValidEmail(email string) bool {
 func isValidPassword(password string) bool {
 
 	lengthRegex := regexp.MustCompile(`^.{8,}$`)
-	uppercaseRegex := regexp.MustCompile(`[A-Z]`)
+
 	lowercaseRegex := regexp.MustCompile(`[a-z]`)
 	digitRegex := regexp.MustCompile(`[0-9]`)
 	specialCharRegex := regexp.MustCompile(`[!@#$%^&*()_+{}[\]:;<>,.?/~\\-]`)
 
 	hasLength := lengthRegex.MatchString(password)
-	hasUppercase := uppercaseRegex.MatchString(password)
+
 	hasLowercase := lowercaseRegex.MatchString(password)
 	hasDigit := digitRegex.MatchString(password)
 	hasSpecialChar := specialCharRegex.MatchString(password)
 
-	return hasLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar
+	return hasLength && hasLowercase && hasSpecialChar && hasDigit
+
 }
