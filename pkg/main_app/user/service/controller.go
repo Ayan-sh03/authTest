@@ -54,7 +54,7 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 	log.Printf("otp: %s", otp)
 	log.Printf("printing query %v", queries)
 
-	_, dberr := queries.CreateUser(context.Background(), db.CreateUserParams{
+	_, dberr := queries.CreateUser(context.Background(), db.CreateUserParams{ //!
 		Firstname:  user.Firstname,
 		Middlename: user.Middlename,
 		Lastname:   user.Lastname,
@@ -62,6 +62,7 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 		Password:   hashedPassword,
 		Otp:        otp,
 	})
+
 	if dberr != nil {
 		log.Fatal("Error occured creating user", dberr)
 		network.RespondWithError(w, http.StatusInternalServerError, dberr.Error())
@@ -85,9 +86,9 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//!Validate here
-	err := validation.UserValidator(&user)
-	if err != nil {
-		network.RespondWithError(w, http.StatusBadRequest, err.Error())
+	validationErr := validation.UserValidator(&user)
+	if validationErr != nil {
+		network.RespondWithError(w, http.StatusBadRequest, validationErr.Error())
 		return
 	}
 	//!
@@ -117,10 +118,10 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := security.GenerateJWT(dbUser.Email)
+	token, err := security.GenerateJWT(dbUser.Email, dbUser.ID)
 
-	if err != nil {
-		network.RespondWithError(w, http.StatusInternalServerError, "Error While generating Token"+err.Error())
+	if err {
+		network.RespondWithError(w, http.StatusInternalServerError, "Error While generating Token")
 		return
 	}
 
@@ -179,12 +180,13 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 
 	}()
 
-	token, err := security.GenerateJWT(OtpRequest.Email)
-
-	if err != nil {
-		network.RespondWithError(w, http.StatusInternalServerError, "Error While generating Token"+err.Error())
+	//!
+	token, err := security.GenerateJWT(OtpRequest.Email, dbUser.ID)
+	if !err {
+		network.RespondWithError(w, http.StatusInternalServerError, "Internal Servor Error : Error While generating Token")
 		return
 	}
+	//!
 
 	network.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "OTP Verified", "token": token})
 }

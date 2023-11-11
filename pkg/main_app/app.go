@@ -18,7 +18,7 @@ func Run() {
 	//* Run app
 	storage.ConnectDB()
 
-	//initialse router
+	//* Initialse router
 	router := service.SetupRoutes()
 
 	log.Fatal(http.ListenAndServe(":8080", router))

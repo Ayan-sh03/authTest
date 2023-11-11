@@ -2,12 +2,14 @@ package security
 
 import (
 	"os"
+	"strconv"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
+var jwtLife = []byte(os.Getenv("JWT_LIFETIME"))
 
 // GenerateJWT generates a JSON Web Token (JWT) for the given email and username.
 //
@@ -18,34 +20,42 @@ var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 // Returns:
 // - tokenString: a string representing the generated JWT.
 // - err: an error object indicating any error that occurred during JWT generation.
-func GenerateJWT(email string) (string, error) {
-	expirationTime := time.Now().Add(240 * time.Hour)
-
+func GenerateJWT(email string, id int64) (string, bool) {
+	// Removed expirationTime variable.
+	expTime, expErr := strconv.ParseInt(string(jwtLife), 10, 64) //! Added variable
+	if expErr != nil {
+		return "", false
+	}
 	claims := jwt.MapClaims{
-		"exp":        expirationTime.Unix(),
-		"authorized": true,
-		"email":      email,
+		"exp": time.Now().Add(time.Duration(expTime) * time.Hour).Unix(),
+		// Removed authorization field
+		"email": email,
+		// Added id field
+		"id": id,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenStr, err := token.SignedString(jwtKey)
+	if err != nil {
+		return "", false
+	}
 
-	return tokenStr, err
+	return tokenStr, true
 }
-func ValidateToken(signedToken string) (err error) {
-	token, err := jwt.Parse(signedToken, func(token *jwt.Token) (interface{}, error) {
+
+// Changed return type
+func ValidateJWT(tokenStr string) bool {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
 
 	if err != nil {
-		return err
+		return false
 	}
 
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return nil
-	} else {
-		return err
+	if _, ok := token.Claims.(jwt.MapClaims); !ok || !token.Valid {
+		return false
 	}
-
+	return true
 }

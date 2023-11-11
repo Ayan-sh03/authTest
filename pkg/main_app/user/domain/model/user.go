@@ -1,4 +1,4 @@
-package model
+package model //
 
 import (
 	db "authTest/pkg/main_app/user/repository"
@@ -12,7 +12,8 @@ type User struct {
 	Password   string `json:"password"`
 }
 
-func ToRepository(user *User) *db.CreateUserParams {
+//
+func ToRepository(user *User) *db.CreateUserParams {//  
 	return &db.CreateUserParams{
 		Firstname:  user.Firstname,
 		Middlename: user.Middlename,
