@@ -44,17 +44,16 @@ func IsValidEmail(email string) bool {
 func isValidPassword(password string) bool {
 
 	lengthRegex := regexp.MustCompile(`^.{8,}$`)
-
+	uppercaseRegex := regexp.MustCompile(`[A-Z]`)
 	lowercaseRegex := regexp.MustCompile(`[a-z]`)
 	digitRegex := regexp.MustCompile(`[0-9]`)
 	specialCharRegex := regexp.MustCompile(`[!@#$%^&*()_+{}[\]:;<>,.?/~\\-]`)
 
 	hasLength := lengthRegex.MatchString(password)
-
+	hasUppercase := uppercaseRegex.MatchString(password)
 	hasLowercase := lowercaseRegex.MatchString(password)
 	hasDigit := digitRegex.MatchString(password)
 	hasSpecialChar := specialCharRegex.MatchString(password)
 
-	return hasLength && hasLowercase && hasSpecialChar && hasDigit
-
+	return hasLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar
 }
