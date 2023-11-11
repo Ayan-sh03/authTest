@@ -24,7 +24,6 @@ func GenerateJWT(email string, id int64) (string, bool) {
 	// Removed expirationTime variable.
 	expTime, expErr := strconv.ParseInt(string(os.Getenv("JWT_LIFETIME")), 10, 64) //! Added variable
 	if expErr != nil {
-		log.Println(expErr)
 		return "", false
 	}
 	claims := jwt.MapClaims{
