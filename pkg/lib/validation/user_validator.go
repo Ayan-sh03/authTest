@@ -8,7 +8,7 @@ import (
 
 func UserValidator(user *model.User) error {
 	if user.Firstname == "" || user.Lastname == "" {
-		return errors.New("ERROR : Firstname field must not be empty")
+		return errors.New("ERROR : Firstname or LastName field must not be empty")
 	}
 
 	if user.Email == "" {
