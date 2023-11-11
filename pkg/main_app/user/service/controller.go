@@ -4,29 +4,36 @@ import (
 	network "authTest/pkg/lib/net"
 	"authTest/pkg/lib/security"
 	"authTest/pkg/lib/util"
+	"authTest/pkg/lib/validation"
+	"authTest/pkg/storage/postgres"
+	"log"
 
 	domain "authTest/pkg/main_app/user/domain/model"
 	db "authTest/pkg/main_app/user/repository"
 
 	"context"
-	"database/sql"
+
 	"encoding/json"
 	"net/http"
 )
 
-func RegisterUserController(w http.ResponseWriter, r *http.Request, q *db.Queries) {
+func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 
 	var user domain.User
 
 	decoder := json.NewDecoder(r.Body)
-
+	queries := db.New(postgres.DB)
 	if err := decoder.Decode(&user); err != nil {
 		network.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	//!Validate here
-
+	err := validation.UserValidator(&user)
+	if err != nil {
+		network.RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	//!
 
 	hashedPassword, err := security.HashPassword(user.Password)
@@ -42,17 +49,22 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request, q *db.Querie
 		return
 	}
 
-	_, dberr := q.CreateUser(context.Background(), db.CreateUserParams{
+	log.Printf("user: %+v", user)
+	log.Printf("hashedPassword: %s", hashedPassword)
+	log.Printf("otp: %s", otp)
+	log.Printf("printing query %v", queries)
+
+	_, dberr := queries.CreateUser(context.Background(), db.CreateUserParams{
 		Firstname:  user.Firstname,
-		Middlename: sql.NullString{String: *user.Middlename, Valid: user.Middlename != nil},
+		Middlename: user.Middlename,
 		Lastname:   user.Lastname,
 		Email:      user.Email,
 		Password:   hashedPassword,
 		Otp:        otp,
 	})
-
 	if dberr != nil {
-		network.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		log.Fatal("Error occured creating user", dberr)
+		network.RespondWithError(w, http.StatusInternalServerError, dberr.Error())
 		return
 	}
 
@@ -62,7 +74,7 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request, q *db.Querie
 
 }
 
-func LoginController(w http.ResponseWriter, r *http.Request, q *db.Queries) {
+func LoginController(w http.ResponseWriter, r *http.Request) {
 	var user domain.User
 
 	decoder := json.NewDecoder(r.Body)
@@ -73,8 +85,13 @@ func LoginController(w http.ResponseWriter, r *http.Request, q *db.Queries) {
 	}
 
 	//!Validate here
-
+	err := validation.UserValidator(&user)
+	if err != nil {
+		network.RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	//!
+	q := db.New(postgres.DB)
 
 	dbUser, userErr := q.GetUserByEmail(context.Background(), user.Email)
 
@@ -111,11 +128,12 @@ func LoginController(w http.ResponseWriter, r *http.Request, q *db.Queries) {
 
 }
 
-func VerifyOtpController(w http.ResponseWriter, r *http.Request, q *db.Queries) {
+func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 	var OtpRequest struct {
 		Email string `json:"email"`
 		OTP   string `json:"otp"`
 	}
+	q := db.New(postgres.DB)
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -125,7 +143,10 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request, q *db.Queries) 
 	}
 
 	//!Validate here
-
+	if !validation.IsValidEmail(OtpRequest.Email) {
+		network.RespondWithError(w, http.StatusBadRequest, "Invalid Email")
+		return
+	}
 	//!
 
 	dbUser, userErr := q.GetUserByEmail(context.Background(), OtpRequest.Email)

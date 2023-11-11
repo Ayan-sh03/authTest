@@ -1,29 +1,38 @@
 package postgres
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	_ "github.com/lib/pq"
 )
 
-var CONN *pgx.Conn
+var DB *sql.DB
 
 const connectMsg string = "---------------------------------------------------------------------------------------------\nConnected to DB\n---------------------------------------------------------------------------------------------"
 
-func Postgres() *pgx.Conn {
-	ctx := context.Background()
+func Postgres() *sql.DB {
+
 	uri := os.Getenv("SQLURI")
 
-	conn, err := pgx.Connect(ctx, uri)
+	// Open a connection to the database
+	db, err := sql.Open("postgres", uri)
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
-	CONN = conn
+
+	// Ping the database to check if the connection is valid
+	err = db.Ping()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	DB = db
 
 	fmt.Println(connectMsg)
-	return conn
+	return db
 }
