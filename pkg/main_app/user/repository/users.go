@@ -5,14 +5,13 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 )
 
 type User struct {
 	ID         int64
 	Firstname  string
-	Middlename sql.NullString
+	Middlename string
 	Lastname   string
 	Email      string
 	Password   string
@@ -21,3 +20,4 @@ type User struct {
 	IsVerified bool
 	Otp        string
 }
+
