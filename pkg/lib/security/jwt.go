@@ -1,6 +1,7 @@
 package security
 
 import (
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -9,7 +10,6 @@ import (
 )
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
-var jwtLife = []byte(os.Getenv("JWT_LIFETIME"))
 
 // GenerateJWT generates a JSON Web Token (JWT) for the given email and username.
 //
@@ -22,8 +22,9 @@ var jwtLife = []byte(os.Getenv("JWT_LIFETIME"))
 // - err: an error object indicating any error that occurred during JWT generation.
 func GenerateJWT(email string, id int64) (string, bool) {
 	// Removed expirationTime variable.
-	expTime, expErr := strconv.ParseInt(string(jwtLife), 10, 64) //! Added variable
+	expTime, expErr := strconv.ParseInt(string(os.Getenv("JWT_LIFETIME")), 10, 64) //! Added variable
 	if expErr != nil {
+		log.Println(expErr)
 		return "", false
 	}
 	claims := jwt.MapClaims{
@@ -38,6 +39,7 @@ func GenerateJWT(email string, id int64) (string, bool) {
 
 	tokenStr, err := token.SignedString(jwtKey)
 	if err != nil {
+		log.Println(err)
 		return "", false
 	}
 

@@ -95,16 +95,13 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 	q := db.New(postgres.DB)
 
 	dbUser, userErr := q.GetUserByEmail(context.Background(), user.Email)
-
 	if userErr != nil {
 		network.RespondWithError(w, http.StatusInternalServerError, userErr.Error())
 		return
 	}
 
 	// check if verified
-
 	if !dbUser.IsVerified {
-
 		network.RespondWithError(w, http.StatusUnauthorized, "Please Verify Your Account")
 		go network.SendOtpByEmail(user.Email, dbUser.Otp)
 		return
@@ -118,9 +115,9 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := security.GenerateJWT(dbUser.Email, dbUser.ID)
+	token, err := security.GenerateJWT(dbUser.Email, dbUser.ID) //! Changed
 
-	if err {
+	if !err {
 		network.RespondWithError(w, http.StatusInternalServerError, "Error While generating Token")
 		return
 	}
@@ -181,7 +178,7 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	//!
-	token, err := security.GenerateJWT(OtpRequest.Email, dbUser.ID)
+	token, err := security.GenerateJWT(OtpRequest.Email, dbUser.ID) //! Changed
 	if !err {
 		network.RespondWithError(w, http.StatusInternalServerError, "Internal Servor Error : Error While generating Token")
 		return
