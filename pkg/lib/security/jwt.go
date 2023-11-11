@@ -27,7 +27,7 @@ func GenerateJWT(email string, id int64) (string, bool) {
 		return "", false
 	}
 	claims := jwt.MapClaims{
-		"exp": time.Now().Add(time.Duration(expTime) * time.Minute).Unix(),
+		"exp": time.Now().Add(time.Duration(expTime) * time.Hour).Unix(),
 		// Removed authorization field
 		"email": email,
 		// Added id field
