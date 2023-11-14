@@ -8,7 +8,7 @@ import (
 	"authTest/pkg/storage/postgres"
 	"log"
 
-	domain "authTest/pkg/main_app/user/domain/model"
+	"authTest/pkg/main_app/user/domain"
 	db "authTest/pkg/main_app/user/repository"
 
 	"context"
