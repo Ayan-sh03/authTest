@@ -5,8 +5,10 @@ import (
 	"authTest/pkg/lib/security"
 	"authTest/pkg/lib/util"
 	"authTest/pkg/lib/validation"
+	_ "authTest/pkg/main_app/doc_model"
 	"authTest/pkg/storage/postgres"
 	"log"
+	"strings"
 
 	"authTest/pkg/main_app/user/domain"
 	db "authTest/pkg/main_app/user/repository"
@@ -17,10 +19,21 @@ import (
 	"net/http"
 )
 
+//^ Register : 
+// @Summary		Register route
+// @Description	Allows users to create a new account.
+// @Tags			user
+// @Accept			json
+// @Produce		json
+// @Param			user	body		doc_model.Register		true	"User's firstname, lastname, middlename, email, password"
+// @Success		201		{object}	domain.User				"Successful response"
+// @Failure		400		{object}	doc_model.ErrorResponse	"Invalid JSON data, Invalid Email"
+// @Failure		409		{object}	doc_model.ErrorResponse	"User already exists"
+// @Failure		422		{object}	doc_model.ErrorResponse	"Please provide with sufficient credentials"
+// @Failure		500		{object}	doc_model.ErrorResponse	"Internal Server Error, Error in inserting the document, Error in hashing password, Error While generating OTP"
+// @Router			/user/register [post]
 func RegisterUserController(w http.ResponseWriter, r *http.Request) {
-
 	var user domain.User
-
 	decoder := json.NewDecoder(r.Body)
 	queries := db.New(postgres.DB)
 	if err := decoder.Decode(&user); err != nil {
@@ -45,16 +58,11 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 
 	otp, err := util.GenerateOTP()
 	if err != nil {
-		network.RespondWithError(w, http.StatusInternalServerError, "Error While generating OTP"+err.Error())
+		network.RespondWithError(w, http.StatusInternalServerError, "Error While generating OTP "+err.Error())
 		return
 	}
 
-	log.Printf("user: %+v", user)
-	log.Printf("hashedPassword: %s", hashedPassword)
-	log.Printf("otp: %s", otp)
-	log.Printf("printing query %v", queries)
-
-	_, dberr := queries.CreateUser(context.Background(), db.CreateUserParams{ //!
+	_, dbErr := queries.CreateUser(context.Background(), db.CreateUserParams{ //!
 		Firstname:  user.Firstname,
 		Middlename: user.Middlename,
 		Lastname:   user.Lastname,
@@ -63,9 +71,13 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 		Otp:        otp,
 	})
 
-	if dberr != nil {
-		log.Fatal("Error occured creating user", dberr)
-		network.RespondWithError(w, http.StatusInternalServerError, dberr.Error())
+	if dbErr != nil {
+		log.Println("Error occured creating user", dbErr)
+		if strings.Contains(dbErr.Error(), "\"users_email_key\"") {
+			network.RespondWithError(w, http.StatusConflict, "User already exists")
+			return
+		}
+		network.RespondWithError(w, http.StatusInternalServerError, dbErr.Error())
 		return
 	}
 
@@ -75,6 +87,21 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// ^ Login :
+//
+//	@Summary		Login route
+//	@Description	Allows users to login into their account.
+//	@Tags			user
+//	@Accept			json
+//	@Produce		json
+//	@Param			Body	body		doc_model.Login			true	"User's email and password"
+//	@Success		201		{object}	domain.User				"Successful response"
+//	@Failure		400		{object}	doc_model.ErrorResponse	"Invalid JSON data, Invalid Email"
+//	@Failure		401		{object}	doc_model.ErrorResponse	"Please Verify Your Account, Invalid Credentials"
+//	@Failure		404		{object}	doc_model.ErrorResponse	"User is not registered"
+//	@Failure		422		{object}	doc_model.ErrorResponse	"Please Verify Your Account"
+//	@Failure		500		{object}	doc_model.ErrorResponse	"Internal server error"
+//	@Router			/user/login [post]
 func LoginController(w http.ResponseWriter, r *http.Request) {
 	var user domain.User
 
@@ -102,7 +129,7 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 
 	// check if verified
 	if !dbUser.IsVerified {
-		network.RespondWithError(w, http.StatusUnauthorized, "Please Verify Your Account")
+		network.RespondWithError(w, http.StatusUnprocessableEntity, "Please Verify Your Account")
 		go network.SendOtpByEmail(user.Email, dbUser.Otp)
 		return
 
@@ -111,22 +138,36 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 	// check password
 	securityErr := security.CheckPassword(user.Password, dbUser.Password)
 	if securityErr != nil {
-		network.RespondWithError(w, http.StatusUnauthorized, securityErr.Error())
+		network.RespondWithError(w, http.StatusUnauthorized, "Invalid Credentials : "+securityErr.Error())
 		return
 	}
 
 	token, err := security.GenerateJWT(dbUser.Email, dbUser.ID) //! Changed
 
 	if !err {
-		network.RespondWithError(w, http.StatusInternalServerError, "Error While generating Token")
+		network.RespondWithError(w, http.StatusInternalServerError, "Internal server error : Error While generating Token")
 		return
 	}
 
 	network.RespondWithJSON(w, http.StatusOK, map[string]string{"token": token})
-
 }
 
+// ^ Validation :
+//
+//	@Summary		Validation route
+//	@Description	Allows users to validate OTP and complete the registration process.
+//	@Tags			user
+//	@Accept			json
+//	@Produce		json
+//	@Param			Body	body		doc_model.OTP					true	"User's email address and otp"
+//	@Success		200		{object}	doc_model.OTP_successResponse	"Successful response"
+//	@Failure		400		{object}	doc_model.ErrorResponse			"Invalid JSON data, Invalid Email"
+//	@Failure		404		{object}	doc_model.ErrorResponse			"User Not Found"
+//	@Failure		401		{object}	doc_model.ErrorResponse			"Invalid OTP, User Already Verified"
+//	@Failure		500		{object}	doc_model.ErrorResponse			"Internal Server Error"
+//	@Router			/user/otp [post]
 func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
+
 	var OtpRequest struct {
 		Email string `json:"email"`
 		OTP   string `json:"otp"`
@@ -162,6 +203,7 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 		network.RespondWithError(w, http.StatusUnauthorized, "User Already Verified")
 		return
 	}
+
 	if OtpRequest.OTP != dbUser.Otp {
 		network.RespondWithError(w, http.StatusUnauthorized, "Invalid OTP")
 		return
