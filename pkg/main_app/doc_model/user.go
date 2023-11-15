@@ -1,4 +1,4 @@
-package docs
+package doc_model
 
 type Register struct {
 	Firstname  string `json:"first_name" validate:"required"`

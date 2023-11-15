@@ -14,11 +14,9 @@ import (
 //	@title			Registration API
 //	@version		1.0
 //	@description	This is a registration api for an application.
-
-//	@BasePath	/api/v1
+//	@BasePath		/api/v1
 
 func Run() {
-
 	err := godotenv.Load("../../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
