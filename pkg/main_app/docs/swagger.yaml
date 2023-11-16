@@ -22,13 +22,6 @@ definitions:
       otp:
         type: string
     type: object
-  doc_model.OTP_successResponse:
-    properties:
-      message:
-        type: string
-      token:
-        type: string
-    type: object
   doc_model.Register:
     properties:
       email:
@@ -46,6 +39,11 @@ definitions:
     - first_name
     - last_name
     - password
+    type: object
+  doc_model.SuccessResponse:
+    properties:
+      token:
+        type: string
     type: object
   domain.User:
     properties:
@@ -82,9 +80,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Successful response
+          description: 'Successful response : Bearer \<token\>'
           schema:
-            $ref: '#/definitions/domain.User'
+            $ref: '#/definitions/doc_model.SuccessResponse'
         "400":
           description: Invalid JSON data, Invalid Email
           schema:
@@ -124,9 +122,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Successful response
+          description: 'Successful response : Bearer \<token\>'
           schema:
-            $ref: '#/definitions/doc_model.OTP_successResponse'
+            $ref: '#/definitions/doc_model.SuccessResponse'
         "400":
           description: Invalid JSON data, Invalid Email
           schema:
@@ -162,7 +160,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Successful response
+          description: 'Successful response : User Model'
           schema:
             $ref: '#/definitions/domain.User'
         "400":
