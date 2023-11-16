@@ -21,7 +21,6 @@ type OTP struct {
 	OTP   string `json:"otp"`
 }
 
-type OTP_successResponse struct {
-	Message string `json:"message"`
-	Token   string `json:"token"`
+type SuccessResponse struct {
+	Token string `json:"token"`
 }
