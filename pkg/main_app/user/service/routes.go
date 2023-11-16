@@ -3,24 +3,26 @@ package service
 import (
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 )
 
-func SetupRoutes() *httprouter.Router {
-	router := httprouter.New()
+func SetupRoutes() *mux.Router {
+	router := mux.NewRouter()
 	basePath := "/api/v1/users"
 
-	router.POST(basePath+"/register", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	userRouter := router.PathPrefix(basePath).Subrouter()
+
+	userRouter.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		RegisterUserController(w, r)
-	})
+	}).Methods("POST")
 
-	router.POST(basePath+"/login", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	userRouter.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		LoginController(w, r)
-	})
+	}).Methods("POST")
 
-	router.POST(basePath+"/otp", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	userRouter.HandleFunc("/otp", func(w http.ResponseWriter, r *http.Request) {
 		VerifyOtpController(w, r)
-	})
+	}).Methods("POST")
 
 	return router
 }

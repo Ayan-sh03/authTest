@@ -1,7 +1,7 @@
 package validation
 
 import (
-	"authTest/pkg/main_app/user/domain/model"
+	"authTest/pkg/main_app/user/domain"
 	"errors"
 	"regexp"
 )
