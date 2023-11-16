@@ -39,7 +39,7 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//!Validate here
-	err := validation.UserValidator(&user)
+	err := validation.UserValidator(&user, "register")
 	if err != nil {
 		network.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
@@ -109,8 +109,8 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//!Validate here
-	validationErr := validation.UserValidator(&user)
-	if validationErr != nil {
+	validationErr := validation.UserValidator(&user, "login")
+	if err != nil {
 		network.RespondWithError(w, http.StatusBadRequest, validationErr.Error())
 		return
 	}
