@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func UserValidator(user *model.User, validationType string) error {
+func UserValidator(user *domain.User, validationType string) error {
 	if validationType == "register" {
 		if user.Firstname == "" || user.Lastname == "" {
 			return errors.New("ERROR : Firstname or LastName field must not be empty")

@@ -110,7 +110,7 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 
 	//!Validate here
 	validationErr := validation.UserValidator(&user, "login")
-	if err != nil {
+	if validationErr != nil {
 		network.RespondWithError(w, http.StatusBadRequest, validationErr.Error())
 		return
 	}
