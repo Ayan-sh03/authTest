@@ -75,7 +75,7 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 
 	go network.SendOtpByEmail(user.Email, otp)
 
-	network.RespondWithJSON(w, http.StatusCreated, "User created successfully , OTP sent to Email Please Verify Your Account  ")
+	network.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{"user": user}) // User Model
 
 }
 
@@ -147,7 +147,7 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	network.RespondWithJSON(w, http.StatusOK, map[string]string{"token": token})
+	network.RespondWithJSON(w, http.StatusOK, map[string]string{"token": "Bearer " + token}) // Only token
 }
 
 // ^ Validation :
@@ -224,5 +224,5 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 	}
 	//!
 
-	network.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "OTP Verified", "token": token})
+	network.RespondWithJSON(w, http.StatusOK, map[string]string{"token": "Bearer " + token})
 }
