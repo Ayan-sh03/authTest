@@ -3,11 +3,12 @@ package adapter
 import (
 	"authTest/pkg/main_app/user/domain"
 	db "authTest/pkg/main_app/user/repository"
+	helper "authTest/pkg/main_app/user/repository/helpers"
 	"authTest/pkg/storage/postgres"
 	"context"
 )
 
-func CreateUser(ctx context.Context, user *domain.User, otp string, hashedPassword string) (db.User, error) {
+func CreateUser(ctx context.Context, user *domain.User, otp string, hashedPassword string) (domain.User, error) {
 	queries := db.New(postgres.DB)
 
 	params := db.CreateUserParams{
@@ -19,7 +20,15 @@ func CreateUser(ctx context.Context, user *domain.User, otp string, hashedPasswo
 		Otp:        otp,
 	}
 
-	return queries.CreateUser(ctx, params)
+	repoUser, err := queries.CreateUser(ctx, params)
+
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	domainUser := helper.ToDomainUser(&repoUser)
+
+	return *domainUser, nil
 
 }
 
