@@ -9,8 +9,6 @@ import (
 	"authTest/pkg/main_app/user/repository/adapter"
 
 	"authTest/pkg/main_app/user/domain"
-	db "authTest/pkg/main_app/user/repository"
-	"authTest/pkg/storage/postgres"
 	"context"
 	"encoding/json"
 	"log"
