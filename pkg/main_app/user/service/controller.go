@@ -5,7 +5,6 @@ import (
 	"authTest/pkg/lib/security"
 	"authTest/pkg/lib/util"
 	"authTest/pkg/lib/validation"
-	_ "authTest/pkg/main_app/doc_model"
 	"log"
 	"strings"
 
