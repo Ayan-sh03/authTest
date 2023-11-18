@@ -41,9 +41,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Successful response",
+                        "description": "Successful response : Bearer \\\u003ctoken\\\u003e",
                         "schema": {
-                            "$ref": "#/definitions/domain.User"
+                            "$ref": "#/definitions/doc_model.SuccessResponse"
                         }
                     },
                     "400": {
@@ -105,9 +105,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful response",
+                        "description": "Successful response : Bearer \\\u003ctoken\\\u003e",
                         "schema": {
-                            "$ref": "#/definitions/doc_model.OTP_successResponse"
+                            "$ref": "#/definitions/doc_model.SuccessResponse"
                         }
                     },
                     "400": {
@@ -163,7 +163,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Successful response",
+                        "description": "Successful response : User Model",
                         "schema": {
                             "$ref": "#/definitions/domain.User"
                         }
@@ -231,17 +231,6 @@ const docTemplate = `{
                 }
             }
         },
-        "doc_model.OTP_successResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
         "doc_model.Register": {
             "type": "object",
             "required": [
@@ -264,6 +253,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "doc_model.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }

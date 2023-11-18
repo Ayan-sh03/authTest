@@ -5,31 +5,33 @@ import (
 	"authTest/pkg/lib/security"
 	"authTest/pkg/lib/util"
 	"authTest/pkg/lib/validation"
-	"log"
-	"strings"
 
-	"authTest/pkg/main_app/user/domain"
 	"authTest/pkg/main_app/user/repository/adapter"
 
+	"authTest/pkg/main_app/user/domain"
+	db "authTest/pkg/main_app/user/repository"
+	"authTest/pkg/storage/postgres"
 	"context"
-
 	"encoding/json"
+	"log"
 	"net/http"
+	"strings"
 )
 
 // ^ Register :
-// @Summary		Register route
-// @Description	Allows users to create a new account.
-// @Tags			user
-// @Accept			json
-// @Produce		json
-// @Param			user	body		doc_model.Register		true	"User's firstname, lastname, middlename, email, password"
-// @Success		201		{object}	domain.User				"Successful response"
-// @Failure		400		{object}	doc_model.ErrorResponse	"Invalid JSON data, Invalid Email"
-// @Failure		409		{object}	doc_model.ErrorResponse	"User already exists"
-// @Failure		422		{object}	doc_model.ErrorResponse	"Please provide with sufficient credentials"
-// @Failure		500		{object}	doc_model.ErrorResponse	"Internal Server Error, Error in inserting the document, Error in hashing password, Error While generating OTP"
-// @Router			/user/register [post]
+//
+//	@Summary		Register route
+//	@Description	Allows users to create a new account.
+//	@Tags			user
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		doc_model.Register		true	"User's firstname, lastname, middlename, email, password"
+//	@Success		201		{object}	domain.User				"Successful response : User Model"
+//	@Failure		400		{object}	doc_model.ErrorResponse	"Invalid JSON data, Invalid Email"
+//	@Failure		409		{object}	doc_model.ErrorResponse	"User already exists"
+//	@Failure		422		{object}	doc_model.ErrorResponse	"Please provide with sufficient credentials"
+//	@Failure		500		{object}	doc_model.ErrorResponse	"Internal Server Error, Error in inserting the document, Error in hashing password, Error While generating OTP"
+//	@Router			/user/register [post]
 func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 	var user domain.User
 	decoder := json.NewDecoder(r.Body)
@@ -75,7 +77,6 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 	go network.SendOtpByEmail(user.Email, otp)
 
 	network.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{"user": user}) // User Model
-
 }
 
 // ^ Login :
@@ -85,13 +86,13 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 //	@Tags			user
 //	@Accept			json
 //	@Produce		json
-//	@Param			Body	body		doc_model.Login			true	"User's email and password"
-//	@Success		201		{object}	domain.User				"Successful response"
-//	@Failure		400		{object}	doc_model.ErrorResponse	"Invalid JSON data, Invalid Email"
-//	@Failure		401		{object}	doc_model.ErrorResponse	"Please Verify Your Account, Invalid Credentials"
-//	@Failure		404		{object}	doc_model.ErrorResponse	"User is not registered"
-//	@Failure		422		{object}	doc_model.ErrorResponse	"Please Verify Your Account"
-//	@Failure		500		{object}	doc_model.ErrorResponse	"Internal server error"
+//	@Param			Body	body		doc_model.Login				true	"User's email and password"
+//	@Success		201		{object}	doc_model.SuccessResponse	"Successful response : Bearer \<token\>"
+//	@Failure		400		{object}	doc_model.ErrorResponse		"Invalid JSON data, Invalid Email"
+//	@Failure		401		{object}	doc_model.ErrorResponse		"Please Verify Your Account, Invalid Credentials"
+//	@Failure		404		{object}	doc_model.ErrorResponse		"User is not registered"
+//	@Failure		422		{object}	doc_model.ErrorResponse		"Please Verify Your Account"
+//	@Failure		500		{object}	doc_model.ErrorResponse		"Internal server error"
 //	@Router			/user/login [post]
 func LoginController(w http.ResponseWriter, r *http.Request) {
 	var user domain.User
@@ -149,19 +150,19 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 	network.RespondWithJSON(w, http.StatusOK, map[string]string{"token": "Bearer " + token}) // Only token
 }
 
-// ^ Validation :
+// ^ Validate Token :
 //
 //	@Summary		Validation route
 //	@Description	Allows users to validate OTP and complete the registration process.
 //	@Tags			user
 //	@Accept			json
 //	@Produce		json
-//	@Param			Body	body		doc_model.OTP					true	"User's email address and otp"
-//	@Success		200		{object}	doc_model.OTP_successResponse	"Successful response"
-//	@Failure		400		{object}	doc_model.ErrorResponse			"Invalid JSON data, Invalid Email"
-//	@Failure		404		{object}	doc_model.ErrorResponse			"User Not Found"
-//	@Failure		401		{object}	doc_model.ErrorResponse			"Invalid OTP, User Already Verified"
-//	@Failure		500		{object}	doc_model.ErrorResponse			"Internal Server Error"
+//	@Param			Body	body		doc_model.OTP				true	"User's email address and otp"
+//	@Success		200		{object}	doc_model.SuccessResponse	"Successful response : Bearer \<token\>"
+//	@Failure		400		{object}	doc_model.ErrorResponse		"Invalid JSON data, Invalid Email"
+//	@Failure		404		{object}	doc_model.ErrorResponse		"User Not Found"
+//	@Failure		401		{object}	doc_model.ErrorResponse		"Invalid OTP, User Already Verified"
+//	@Failure		500		{object}	doc_model.ErrorResponse		"Internal Server Error"
 //	@Router			/user/otp [post]
 func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 
@@ -223,5 +224,5 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 	}
 	//!
 
-	network.RespondWithJSON(w, http.StatusOK, map[string]string{"token": "Bearer " + token})
+	network.RespondWithJSON(w, http.StatusOK, map[string]string{"token": "Bearer " + token}) // Only token
 }

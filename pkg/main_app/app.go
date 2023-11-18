@@ -27,7 +27,7 @@ func Run() {
 
 	//* Initialse router
 	router := service.SetupRoutes()
-	router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+	router.PathPrefix("/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("doc.json"),
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
