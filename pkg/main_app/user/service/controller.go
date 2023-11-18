@@ -5,6 +5,9 @@ import (
 	"authTest/pkg/lib/security"
 	"authTest/pkg/lib/util"
 	"authTest/pkg/lib/validation"
+
+	"authTest/pkg/main_app/user/repository/adapter"
+
 	"authTest/pkg/main_app/user/domain"
 	db "authTest/pkg/main_app/user/repository"
 	"authTest/pkg/storage/postgres"
@@ -32,7 +35,7 @@ import (
 func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 	var user domain.User
 	decoder := json.NewDecoder(r.Body)
-	queries := db.New(postgres.DB)
+
 	if err := decoder.Decode(&user); err != nil {
 		network.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
@@ -59,22 +62,15 @@ func RegisterUserController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, dbErr := queries.CreateUser(context.Background(), db.CreateUserParams{ //!
-		Firstname:  user.Firstname,
-		Middlename: user.Middlename,
-		Lastname:   user.Lastname,
-		Email:      user.Email,
-		Password:   hashedPassword,
-		Otp:        otp,
-	})
+	_, dberr := adapter.CreateUser(context.Background(), &user, otp, hashedPassword)
 
-	if dbErr != nil {
-		log.Println("Error occured creating user", dbErr)
-		if strings.Contains(dbErr.Error(), "\"users_email_key\"") {
+	if dberr != nil {
+		log.Println("Error occured creating user", dberr)
+		if strings.Contains(dberr.Error(), "\"users_email_key\"") {
 			network.RespondWithError(w, http.StatusConflict, "User already exists")
 			return
 		}
-		network.RespondWithError(w, http.StatusInternalServerError, dbErr.Error())
+		network.RespondWithError(w, http.StatusInternalServerError, dberr.Error())
 		return
 	}
 
@@ -115,9 +111,15 @@ func LoginController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//!
-	q := db.New(postgres.DB)
 
-	dbUser, userErr := q.GetUserByEmail(context.Background(), user.Email)
+	// dbUser, userErr := q.GetUserByEmail(context.Background(), user.Email)
+	// if userErr != nil {
+	// 	network.RespondWithError(w, http.StatusInternalServerError, userErr.Error())
+	// 	return
+	// }
+
+	dbUser, userErr := adapter.GetUserByEmail(context.Background(), user.Email)
+
 	if userErr != nil {
 		network.RespondWithError(w, http.StatusInternalServerError, userErr.Error())
 		return
@@ -168,7 +170,6 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 		Email string `json:"email"`
 		OTP   string `json:"otp"`
 	}
-	q := db.New(postgres.DB)
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -184,7 +185,7 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 	}
 	//!
 
-	dbUser, userErr := q.GetUserByEmail(context.Background(), OtpRequest.Email)
+	dbUser, userErr := adapter.GetUserByEmail(context.Background(), OtpRequest.Email)
 
 	if userErr != nil {
 		if userErr.Error() == "sql: no rows in result set" {
@@ -206,7 +207,7 @@ func VerifyOtpController(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		err := q.UpdateUserByEmail(context.Background(), dbUser.Email)
+		err := adapter.UpdateUserByEmail(context.Background(), OtpRequest.Email)
 
 		if err != nil {
 			network.RespondWithError(w, http.StatusInternalServerError, err.Error())
